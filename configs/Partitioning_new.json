@@ -15,15 +15,18 @@
     "n_partitions": 4,
     "sparcify": false,
     "sparcify_p": 0.8,
+    "coarsen": false,
+    "sparcify": false,
+    "sparcify_p": 0.8,
 
     "lr": 1e-2,
     "epoch": 1.5e2,
     "tol": 1e-4,
     "mapping": "distribution",
     "boosting_mapping": 1,
-    "logging_path": "./log/Partition_new.log",
-    "res_path": "./res/Partition_new.json",
-    "folder_path": "./data/maxcut_data/stanford_data_p1/",
+    "logging_path": "./log/Partition_new2.log",
+    "res_path": "./res/Partition_new2.json",
+    "folder_path": "./data/maxcut_data/stanford_data_single/",
     "plot_path": "./res/plots/Hist_maxcut/",
     "model_save_path": "./models/maxcut/",
     "model_load_path": "./models/maxcut/",
@@ -33,9 +36,7 @@
     "hyper": false,
     "penalty": 0,
     "patience": 50,
-
     "multi_gpu": 0,
     "num_gpus": 1,
-    "test_multi_gpu": 0,
-    "coarsen": false
+    "test_multi_gpu": 0
 }

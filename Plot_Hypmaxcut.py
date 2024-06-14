@@ -5,6 +5,9 @@ import numpy as np
 from scipy.optimize import curve_fit
 
 
+# with open('./res/partition_new2.json') as f:
+#     partition=json.load(f)
+
 
 #synthetic
 

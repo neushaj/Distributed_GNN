@@ -107,6 +107,8 @@ def loss_maxcut_weighted_multi(
     return loss
 
 
+
+
 def loss_maxcut_weighted_anealed(probs, C, dct, weights, temper, hyper=False):
     x = probs.squeeze()
     loss = 0
@@ -313,43 +315,6 @@ def loss_partition_numpy_boost(res, C, weights, L, hyper):
     #     penalty = torch.sum(torch.min((1 - x_c), x_c))
     #     loss2 += penalty_c * penalty
     return loss2, -loss
-
-def loss_maxcut_weighted_multi(probs, C, dct, weights_tensor, hyper=False, TORCH_DEVICE='cpu', outer_constraint=None,
-                         temp_reduce=None, start=0):
-    x = probs.squeeze()
-    loss = 0
-    inner_temp_values = torch.zeros(len(outer_constraint) + len(C)).to(TORCH_DEVICE)
-    out_point = len(C)
-    total_C = C + outer_constraint
-    for idx, c in enumerate(total_C):
-        if hyper:
-            indices = [dct[index] for index in c]
-        else:
-            indices = [dct[index] for index in c[0:2]]
-        '''
-        indices = [index-start for index in indices]
-        selected_x = x[indices]
-        temp_1s = torch.prod(1 - selected_x)
-        temp_0s = torch.prod(selected_x)
-        inner_temp_values[idx] =  temp_1s + temp_0s - 1
-        '''
-        indices = [index - start + 1 for index in indices]
-        if idx < out_point:
-            selected_x = x[indices]
-            temp_1s = torch.prod(1 - selected_x)
-            temp_0s = torch.prod(selected_x)
-            inner_temp_values[idx] = temp_1s + temp_0s - 1
-        else:
-            res = [x[indice] if indice >= 0 and indice < len(x) else temp_reduce[indice + start - 1] for indice in
-                   indices]
-            selected_x = torch.stack(res)
-            temp_1s = torch.prod(1 - selected_x)
-            temp_0s = torch.prod(selected_x)
-            inner_temp_values[idx] = 0.5 * (temp_1s + temp_0s - 1)
-
-
-    loss = torch.sum(inner_temp_values * weights_tensor)
-    return loss
 
 
 def loss_maxcut_weighted_anealed(probs, C, dct, weights,  temper, hyper=False):
@@ -755,3 +720,41 @@ def loss_watermark(res_wat,watermark_cons, wat_type):
         temp = p * (res_wat[c[0]] * res_wat[c[1]]) + p * (1-res_wat[c[0]]) * (1-res_wat[c[1]])
         loss += (temp)
     return loss
+
+
+def loss_MNP_weighted(res, C, weights, hyper):
+    #print(weights)
+    x_c = res.squeeze()
+    [n, m] = x_c.shape
+
+
+    loss = 0
+    temp=0
+    penalty=0
+    #print('-----------------')
+    # loss=sum([torch.prod(x[indicest[i]]) + torch.prod(1 - x[indicest[i]]) for i in range(len(C))])
+    for c, w in zip(C, weights):
+        temp=0
+        temp_1s = 1
+        temp_0s = 1
+        for col in range(m):
+            if hyper:
+                # indices = [i - 1 for i in c]
+                # temp=torch.prod(x[indices])+torch.prod(1-x[indices])
+                    for index in c:
+                        temp_1s *= (1 - x_c[index-1,col])
+                        temp_0s *= (x_c[index-1,col])
+            else:
+                for index in c[0:2]:
+                    temp_1s *= (1 - x_c[index-1,col])
+                    temp_0s *= (x_c[index-1,col])
+            temp += (temp_1s + temp_0s)-1
+
+
+        loss += (temp * w)
+        #print(loss)
+    loss2=sum((m*torch.sum(x_c, axis=0)-n)**2)-loss
+    # if penalty_inc:
+    #     penalty = torch.sum(torch.min((1 - x_c), x_c))
+    #     loss2 += penalty_c * penalty
+    return loss2

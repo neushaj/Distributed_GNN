@@ -3,8 +3,7 @@ import timeit
 from itertools import chain
 import torch
 from src.timer import Timer
-# from src.loss import loss_cal_and_update, maxcut_loss_func_helper, loss_maxcut_weighted, loss_sat_weighted, loss_maxind_weighted, loss_maxind_QUBO, loss_maxind_weighted2, loss_task_weighted, loss_maxcut_weighted_anealed, loss_task_weighted_vec, loss_mincut_weighted, loss_partitioning_weighted, loss_partitioning_nonbinary, loss_maxcut_weighted_coarse, loss_maxind_QUBO_coarse
-from src.loss import loss_maxcut_weighted, loss_sat_weighted, loss_maxind_weighted, loss_maxind_QUBO, loss_maxind_weighted2, loss_task_weighted, loss_maxcut_weighted_anealed, loss_task_weighted_vec, loss_maxcut_weighted_multi, loss_partitioning_weighted
+from src.loss import loss_cal_and_update, maxcut_loss_func_helper, loss_maxcut_weighted, loss_sat_weighted, loss_maxind_weighted, loss_maxind_QUBO, loss_maxind_weighted2, loss_task_weighted, loss_maxcut_weighted_anealed, loss_task_weighted_vec, loss_mincut_weighted, loss_partitioning_weighted, loss_partitioning_nonbinary, loss_maxcut_weighted_coarse, loss_maxind_QUBO_coarse
 from src.utils import mapping_algo, mapping_distribution, gen_q_mis,gen_q_maxcut, mapping_distribution_QUBO, get_normalized_G_from_con, mapping_distribution_vec_task, mapping_distribution_vec, all_to_weights, all_to_weights_task
 import numpy as np
 import multiprocessing as mp
@@ -214,19 +213,12 @@ def centralized_train(G, params, f, C, n, info, file_name):
                 break
         prev_loss=loss
 
-    with open("/home/neusha/GNN/HypOp_May_2024/res/oversmoothing/dist_"+file_name[:-4]+".pkl", "wb") as fp:
+    with open("/Users/nasimeh/Documents/distributed_GCN-main-6/Oct12_2023/res/oversmoothing/dist_"+file_name[:-4]+".pkl", "wb") as fp:
         pickle.dump(dist, fp)
 
-    if params["load best out"]:
-        with open("best_out.txt", "r") as f:
-            best_out = eval(f.read())
-    else:
-        best_out = best_out.detach().numpy()
-        best_out = {i + 1: best_out[i][0] for i in range(len(best_out))}
-    
-    # best_out = best_out.detach().numpy()
-    # best_out = {i+1: best_out[i][0] for i in range(len(best_out))}
 
+    best_out = best_out.detach().numpy()
+    best_out = {i+1: best_out[i][0] for i in range(len(best_out))}
     all_weights = [1.0 for c in (C)]
     if params['data'] != 'task':
         weights = all_to_weights(all_weights, n, C)
@@ -685,6 +677,9 @@ def centralized_train_vec(G, params, C, n, info, file_name, L):
                 break
         elif params['mode']== 'partition':
             loss = loss_partitioning_weighted(temp, C, [1 for i in range(len(C))], params['hyper'])
+        elif params['mode']== 'MNP':
+            loss = loss_MNP_weighted(temp, C, [1 for i in range(len(C))], params['hyper'])
+
 
         optimizer.zero_grad()
         # loss.backward(retain_graph=True)
@@ -888,7 +883,7 @@ def centralized_train_att( H, params, f, C, n, info, file_name):
                 break
         prev_loss=loss
 
-    with open("/home/neusha/GNN/HypOp_May_2024/res/oversmoothing/dist_"+file_name[:-4]+".pkl", "wb") as fp:
+    with open("/Users/nasimeh/Documents/distributed_GCN-main-6/Oct12_2023/res/oversmoothing/dist_"+file_name[:-4]+".pkl", "wb") as fp:
         pickle.dump(dist, fp)
 
 
@@ -1097,7 +1092,7 @@ def centralized_train_bipartite( G, params, f, C, n, n_hyper, info,  file_name):
                 torch.save(conv2, name)
                 break
         prev_loss=loss
-    with open("/home/neusha/GNN/HypOp_May_2024/res/oversmoothing/dist_"+file_name[:-4]+".pkl", "wb") as fp:
+    with open("/Users/nasimeh/Documents/distributed_GCN-main-6/Oct12_2023/res/oversmoothing/dist_"+file_name[:-4]+".pkl", "wb") as fp:
         pickle.dump(dist, fp)
     best_out = best_out.detach().numpy()
     best_out = {i+1: best_out[i][0] for i in range(n_hyper)}
@@ -1285,7 +1280,7 @@ def centralized_train_cliquegraph(G, params, f, C, n, info, weights, file_name):
                 torch.save(conv2, name)
                 break
         prev_loss=loss
-    with open("/home/neusha/GNN/HypOp_May_2024/res/oversmoothing/dist_"+file_name[:-4]+".pkl", "wb") as fp:
+    with open("/Users/nasimeh/Documents/distributed_GCN-main-6/Oct12_2023/res/oversmoothing/dist_"+file_name[:-4]+".pkl", "wb") as fp:
         pickle.dump(dist, fp)
     best_out = best_out.detach().numpy()
     best_out = {i+1: best_out[i][0] for i in range(n)}

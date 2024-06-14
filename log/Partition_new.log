@@ -1,1 +1,1 @@
-INFO:main:G22.txt:, running time: 3741.1042148116976, res: [[array([0, 0, 0, 0]), 40417]], res_th: [[array([ 11664, 633616, 215296,  50176]), 59391]], training_time: [3402.967666933313], mapping_time: [334.5349306128919]
+INFO:main:G22.txt:, running time: 683.604777465, res: [[array([0, 0, 0, 0]), 38259]], res_th: [[array([10000, 51984, 19600, 35344]), 57672]], training_time: [201.10792877699998], mapping_time: [481.5701388450001]

@@ -436,8 +436,15 @@ def mapping_distribution_vec(best_outs, params, n, info, weights, constraints, a
         _loss = loss_partition_numpy
 
     for rea in range(params['N_realize']):
-        res = {x: [np.random.choice(range(2), p=[1 - best_outs[x][i], best_outs[x][i]]) for i in range(L)] for x in
-               best_outs.keys()}
+        # res={x:best_outs[x].argmax()}
+        res={}
+        for x in best_outs.keys():
+            part=np.random.choice(range(params['n_partitions']), p=best_outs[x])
+            res_x=[0 for _ in range(params['n_partitions'])]
+            res_x[part]=1
+            res[x]=res_x
+        # res = {x: [np.random.choice(range(2), p=[1 - best_outs[x][i], best_outs[x][i]]) for i in range(L)] for x in
+        #        best_outs.keys()}
         res_array = np.array(list(res.values()))
         # lbest = _loss(res, lenc, leninfo)
         lbest = _loss(res_array, constraints, weights, hyper)
@@ -452,24 +459,27 @@ def mapping_distribution_vec(best_outs, params, n, info, weights, constraints, a
                 # temp = copy.deepcopy(res)
                 temp = copy.deepcopy(res_array)
                 # temp = pr.copy()
+                temp[i-1,:]=[0 for _ in range(params['n_partitions'])]
                 j = random.sample(range(L), 1)[0]
                 # if res[i][j] == 0:
                 #     temp[i][j] = 1
                 # else:
                 #     temp[i][j] = 0
-                if res_array[i - 1, j] == 0:
-                    temp[i - 1, j] = 1
-                else:
-                    temp[i - 1, j] = 0
+                # if res_array[i - 1, j] == 0:
+                temp[i - 1, j] = 1
+                # else:
+                #     temp[i - 1, j] = 0
                 lt = _loss(temp, constraints, weights, hyper)
                 # l1 = _loss(res, lenc, leninfo)
                 if lt < l1 or np.exp(- (lt - l1) / t) > np.random.uniform(0, 1):
                     # res = copy.deepcopy(temp)
                     # res=temp.copy()
-                    if res_array[i - 1, j] == 0:
-                        res_array[i - 1, j] = 1
-                    else:
-                        res_array[i - 1, j] = 0
+                    res_array[i-1,:] = [0 for _ in range(params['n_partitions'])]
+                    res_array[i - 1, j] = 1
+                    # if res_array[i - 1, j] == 0:
+                    #     res_array[i - 1, j] = 1
+                    # else:
+                    #     res_array[i - 1, j] = 0
                     l1 = lt
                     # if l1 == 0:
                     #     break
@@ -478,8 +488,9 @@ def mapping_distribution_vec(best_outs, params, n, info, weights, constraints, a
                     #     resbest=res.copy()
 
                 # if sum(res_array[i-1,:])==0 or sum(res_array[i-1,:])>1:
-                #     res_array[i - 1, j1]=0 for j1 in range(L)]
+                #     res_array[i - 1, :]=0
                 #     arg1=random.randint(0, L-1)
+                #     res_array[i - 1, :] = 1
             # if l1 == 0:
             #     break
             t = t * 0.95

@@ -139,6 +139,10 @@ def exp_centralized_watermark(params):
                 print(res_th)
                 f.create_dataset(f"{file_name}", data = res)
 
+
+import torch
+
+
 def exp_centralized_for_multi(proc_id, devices, params):
     print("start to prepare for device")
     dev_id = devices[proc_id]

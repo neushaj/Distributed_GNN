@@ -176,7 +176,9 @@ def centralized_solver(constraints, header, params, file_name):
             res, prob, train_time, map_time = centralized_train_coarsen(G, params, f, new_constraints, constraints, graph_dict,n_org, n, info,
                                                                     file_name)
 
-        elif params['mode']=='partition':
+        elif params['mode']=='partition' or params['mode']=='MNP':
+            if params['mode']=='MNP':
+                L = params['n_knapsacks']+1
             res, prob, train_time, map_time = centralized_train_vec(G, params, constraints, n, info,
                                                                     file_name, L)
 
@@ -345,7 +347,6 @@ def centralized_solver_for(constraints, header, params, file_name, device=0,
         for constraint in constraints:
             for node in constraint:
                 info[abs(node)].append(constraint)
-
     all_weights = [[1.0 for c in (inner_constraint)] for i in range(params['num_samples'])]
 
     weights = [all_to_weights(all_weights[i], header['num_nodes'], inner_constraint) for i in range(len(all_weights))]
@@ -406,6 +407,8 @@ def centralized_solver_for(constraints, header, params, file_name, device=0,
         return reses, reses2, reses_th, probs, timeit.default_timer() - temp_time, train_time, map_time
     else:
         return None, None, None, None, None, None, None
+
+
 
 def QUBO_solver(params):
     logging.basicConfig(filename=params['logging_path'], filemode='w', level=logging.INFO)
