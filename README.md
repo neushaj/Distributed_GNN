@@ -1,4 +1,4 @@
-# distributed_GCN
+# distributed_GNN
 
 
 ## Parameters/Configs
