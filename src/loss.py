@@ -67,6 +67,8 @@ def loss_maxcut_weighted_multi(
     outer_constraint=None,
     temp_reduce=None,
     start=0,
+    node_mapper=None,
+    cur_nodes=None
 ):
     x = probs.squeeze()
     loss = 0
@@ -74,10 +76,10 @@ def loss_maxcut_weighted_multi(
     out_point = len(C)
     total_C = C + outer_constraint
     for idx, c in enumerate(total_C):
-        if hyper:
-            indices = [dct[index] for index in c]
-        else:
-            indices = [dct[index] for index in c[0:2]]
+        # if hyper:
+        #     indices = [dct[index] for index in c]
+        # else:
+        #     indices = [dct[index] for index in c[0:2]]
         """
         indices = [index-start for index in indices]
         selected_x = x[indices]
@@ -85,18 +87,25 @@ def loss_maxcut_weighted_multi(
         temp_0s = torch.prod(selected_x)
         inner_temp_values[idx] =  temp_1s + temp_0s - 1
         """
-        indices = [index - start + 1 for index in indices]
+        #indices = [index - start + 1 for index in indices]
+        
         if idx < out_point:
-            selected_x = x[indices]
+            selected_x = x[[node_mapper[j] for j in c]]
             temp_1s = torch.prod(1 - selected_x)
             temp_0s = torch.prod(selected_x)
             inner_temp_values[idx] = temp_1s + temp_0s - 1
         else:
+            # res = [
+            #     x[indice]
+            #     if indice >= 0 and indice < len(x)
+            #     else temp_reduce[indice + start - 1]
+            #     for indice in indices
+            # ]
             res = [
-                x[indice]
-                if indice >= 0 and indice < len(x)
-                else temp_reduce[indice + start - 1]
-                for indice in indices
+                x[node_mapper[j]]
+                if j in cur_nodes
+                else temp_reduce[dct[j]]
+                for j in c
             ]
             selected_x = torch.stack(res)
             temp_1s = torch.prod(1 - selected_x)

@@ -1,5 +1,5 @@
 import numpy
-from src.data_reading import read_uf, read_stanford, read_hypergraph, read_hypergraph_task, read_NDC
+from src.data_reading import read_uf, read_stanford, read_hypergraph, read_hypergraph_task, read_NDC, read_arxiv
 from src.solver import  centralized_solver, centralized_solver_for
 import logging
 import os
@@ -180,10 +180,13 @@ def exp_centralized_for_multi(proc_id, devices, params):
             if params["partitioning_alg"] == "sequential":
                 cur_nodes = list(range(total_nodes * proc_id // len(devices), total_nodes * (proc_id + 1) // len(devices)))
                 cur_nodes = [c + 1 for c in cur_nodes]
+                partition_sizes = [len(cur_nodes) for j in range(params['num_gpus'])]
             elif params["partitioning_alg"] == "optimized":
                 with open(params["partitioning_file"], 'r') as f:
                     partitioning_data = json.load(f)
+                    partition_sizes = [len(partitioning_data[str(j)]) for j in range(params['num_gpus'])]
                     cur_nodes = partitioning_data[str(proc_id)]
+                    cur_nodes = [c + 1 for c in cur_nodes]
             inner_constraint = []
             outer_constraint = []
             for c in constraints:
@@ -194,7 +197,8 @@ def exp_centralized_for_multi(proc_id, devices, params):
 
             print("device", dev_id, "start to train")
             res, res2, res_th, probs, total_time, train_time, map_time = centralized_solver_for(constraints, header, params, file_name, proc_id,
-                                                        cur_nodes=cur_nodes, inner_constraint=inner_constraint, outer_constraint=outer_constraint)
+                                                        cur_nodes=cur_nodes, inner_constraint=inner_constraint, outer_constraint=outer_constraint, 
+                                                        partition_sizes=partition_sizes)
 
             if res is not None:
                 time = timeit.default_timer() - temp_time

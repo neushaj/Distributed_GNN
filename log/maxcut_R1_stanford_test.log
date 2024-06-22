@@ -1,0 +1,3 @@
+INFO:main:G4.txt:, running time: 811.1248956508934, res: [[-9054]], res_th: [[-267]], res2: [], training_time: 679.3236438948661, mapping_time: 131.40259461663663
+INFO:main:G16.txt:, running time: 278.8948130235076, res: [[-1920]], res_th: [[-143]], res2: [], training_time: 144.20008605904877, mapping_time: 134.5708210747689
+INFO:main:G2.txt:, running time: 820.8755156714469, res: [[-8954]], res_th: [[-321]], res2: [], training_time: 688.4981060605496, mapping_time: 132.01205385103822

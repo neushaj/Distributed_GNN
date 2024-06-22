@@ -313,8 +313,18 @@ def centralized_solver(constraints, header, params, file_name):
     return reses, reses_th, res,res_th, probs, timeit.default_timer() - temp_time, train_times, map_times
 
 #### solver for multi-gpu (distributed) training ####
-def centralized_solver_for(constraints, header, params, file_name, device=0,
-                           cur_nodes=None, inner_constraint=None, outer_constraint=None):
+def centralized_solver_for(
+    constraints, 
+    header, 
+    params, 
+    file_name, 
+    device=0,
+    cur_nodes=None, 
+    inner_constraint=None, 
+    outer_constraint=None, 
+    partition_sizes=None
+    ):
+
     temp_time = timeit.default_timer()
     edges = [[abs(x) - 1 for x in edge] for edge in constraints]
     if cur_nodes is None:
@@ -322,9 +332,10 @@ def centralized_solver_for(constraints, header, params, file_name, device=0,
     else:
         n = len(cur_nodes)
 
-    f = int(np.sqrt(n))
+    #f = int(np.sqrt(n))
     # f=n // 2
-
+    f = 21
+    
     info = {x + 1: [] for x in range(header['num_nodes'])}
     inner_info = None
     outer_info = None
@@ -366,9 +377,9 @@ def centralized_solver_for(constraints, header, params, file_name, device=0,
         temp_weights = []
         for j in range(params['num_samples']):
             res, prob, train_time, map_time = centralized_train_for(Xs[j], params, f, constraints, n, info,
-                                                                        weights[i], file_name, device
-                                                                        , inner_constraint, outer_constraint, cur_nodes,
-                                                                        inner_info, outer_info)
+                                                                    weights[i], file_name, device,
+                                                                    inner_constraint, outer_constraint, cur_nodes,
+                                                                    inner_info, outer_info, partition_sizes)
 
             if torch.distributed.get_rank() == 0:
                 res_th = {x: 0 if prob[x] < 0.5 else 1 for x in prob.keys()}

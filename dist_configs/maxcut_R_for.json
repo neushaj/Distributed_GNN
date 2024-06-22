@@ -43,5 +43,5 @@
     "n_partitions": 4,
     "Att": false,
     "partitioning_alg": "optimized",
-    "partitioning_file": "/home/neusha/GNN/HypOp_May_2024/res/Partition_new.json"
+    "partitioning_file": "./res/Partition_new2.json"
 }

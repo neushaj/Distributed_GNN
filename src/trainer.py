@@ -1,9 +1,10 @@
+import torch.distributed
 from src.model import single_node, single_node_xavier, HGNN_ATT
 import timeit
 from itertools import chain
 import torch
 from src.timer import Timer
-from src.loss import loss_cal_and_update, maxcut_loss_func_helper, loss_maxcut_weighted, loss_sat_weighted, loss_maxind_weighted, loss_maxind_QUBO, loss_maxind_weighted2, loss_task_weighted, loss_maxcut_weighted_anealed, loss_task_weighted_vec, loss_mincut_weighted, loss_partitioning_weighted, loss_partitioning_nonbinary, loss_maxcut_weighted_coarse, loss_maxind_QUBO_coarse
+from src.loss import loss_cal_and_update, maxcut_loss_func_helper, loss_maxcut_weighted, loss_sat_weighted, loss_maxind_weighted, loss_maxind_QUBO, loss_maxind_weighted2, loss_task_weighted, loss_maxcut_weighted_anealed, loss_task_weighted_vec, loss_mincut_weighted, loss_partitioning_weighted, loss_partitioning_nonbinary, loss_maxcut_weighted_coarse, loss_maxind_QUBO_coarse, loss_maxcut_weighted_multi
 from src.utils import mapping_algo, mapping_distribution, gen_q_mis,gen_q_maxcut, mapping_distribution_QUBO, get_normalized_G_from_con, mapping_distribution_vec_task, mapping_distribution_vec, all_to_weights, all_to_weights_task
 import numpy as np
 import multiprocessing as mp
@@ -213,12 +214,20 @@ def centralized_train(G, params, f, C, n, info, file_name):
                 break
         prev_loss=loss
 
-    with open("/Users/nasimeh/Documents/distributed_GCN-main-6/Oct12_2023/res/oversmoothing/dist_"+file_name[:-4]+".pkl", "wb") as fp:
+    with open("./res/oversmoothing/dist_"+file_name[:-4]+".pkl", "wb") as fp:
         pickle.dump(dist, fp)
 
 
-    best_out = best_out.detach().numpy()
-    best_out = {i+1: best_out[i][0] for i in range(len(best_out))}
+    if params["load best out"]:
+        with open("best_out.txt", "r") as f:
+            best_out = eval(f.read())
+    else:
+        best_out = best_out.detach().numpy()
+        best_out = {i + 1: best_out[i][0] for i in range(len(best_out))}
+        # best_out = {i + 1: best_out[graph_dict[i+1][0]-1][graph_dict[i+1][1]] for i in range(n_org)}
+
+    # best_out = best_out.detach().numpy()
+    # best_out = {i+1: best_out[i][0] for i in range(len(best_out))}
     all_weights = [1.0 for c in (C)]
     if params['data'] != 'task':
         weights = all_to_weights(all_weights, n, C)
@@ -256,7 +265,8 @@ def centralized_train(G, params, f, C, n, info, file_name):
 ##### for multi-gpu (distributed) training #####
 def centralized_train_for(X, params, f, total_C, n, info_input_total, weights, file_name, device=0,
                           inner_constraint=None, outer_constraint=None, cur_nodes=None, inner_info=None,
-                          outer_info=None):
+                          outer_info=None, partition_sizes=None):
+    
     temp_time = timeit.default_timer()
     # fix seed to ensure consistent results
     seed_value = 100
@@ -280,7 +290,9 @@ def centralized_train_for(X, params, f, total_C, n, info_input_total, weights, f
     patience = params['patience']
     best_loss = float('inf')
     dct = {x + 1: x for x in range(len(weights))}
+
     X = torch.cat([X[i] for i in X])
+    node_mapper = {x: idx for idx, x in enumerate(cur_nodes)} ## if not in multi gpu mode????
 
     print("[n]", n, "[C]", len(C), "weight", len(weights))
     if params['transfer']:
@@ -359,8 +371,10 @@ def centralized_train_for(X, params, f, total_C, n, info_input_total, weights, f
             cons_list = info[i]
             indices = [cons[1] if cons[0] == i else cons[0] for cons in cons_list]
             indices_tensor = torch.tensor(indices, dtype=torch.long)  # Convert list to long tensor for indexing
-            indices_tensor = indices_tensor - start
-            idx = i - start
+            #indices_tensor = indices_tensor - start
+            indices_tensor = [node_mapper[j.item()] for j in indices_tensor]
+            #idx = i - start
+            idx = node_mapper[i]
             temp2[idx, :] += torch.sum(temp[indices_tensor, :], dim=0).to(TORCH_DEVICE)
             temp2[idx, :] /= len(info[i])
 
@@ -373,8 +387,10 @@ def centralized_train_for(X, params, f, total_C, n, info_input_total, weights, f
             cons_list = info[i]
             indices = [cons[1] if cons[0] == i else cons[0] for cons in cons_list]
             indices_tensor = torch.tensor(indices, dtype=torch.long)  # Convert list to long tensor for indexing
-            indices_tensor = indices_tensor - start
-            idx = i - start
+            #indices_tensor = indices_tensor - start
+            indices_tensor = [node_mapper[j.item()] for j in indices_tensor]
+            #idx = i - start
+            idx = node_mapper[i]
             temp2[idx, :] += torch.sum(temp[indices_tensor, :], dim=0).to(TORCH_DEVICE)
             temp2[idx, :] /= len(info[i])
         temp = temp2
@@ -388,13 +404,20 @@ def centralized_train_for(X, params, f, total_C, n, info_input_total, weights, f
             loss = loss_sat_weighted(temp, C, dct, [1 for i in range(len(C))])
         elif params['mode'] == 'maxcut':
             if params["multi_gpu"]:
-                temp_reduce = [torch.zeros_like(temp).to(f'cuda:{device}') for _ in range(4)]
-                torch.distributed.all_gather(temp_reduce, temp)
+                # temp_reduce = [torch.zeros_like(temp).to(f'cuda:{device}') for _ in range(4)]
+                # torch.distributed.all_gather(temp_reduce, temp)
+                # temp_reduce = torch.cat(temp_reduce, dim=0)
+                # temp_reduce = temp_reduce.squeeze(1) 
+                padded_temp = torch.zeros((max(partition_sizes),1), dtype=torch.float32).to(f'cuda:{device}')
+                padded_temp[:temp.size(0)] = temp
+                padded_temp_reduce = [torch.zeros((max(partition_sizes),1), dtype=torch.float32).to(f'cuda:{device}') for _ in range(params["num_gpus"])]
+                torch.distributed.all_gather(padded_temp_reduce, padded_temp)
+                temp_reduce = [t[:s] for t, s in zip(padded_temp_reduce, partition_sizes)]
                 temp_reduce = torch.cat(temp_reduce, dim=0)
-                temp_reduce = temp_reduce.squeeze(1)
-            loss = loss_maxcut_weighted_multi(temp, C, dct, torch.ones(len(C) + len(outer_constraint)).to(TORCH_DEVICE),
-                                        params['hyper'],
-                                        TORCH_DEVICE, outer_constraint, temp_reduce, start=start)
+                temp_reduce = temp_reduce.squeeze(1) 
+
+            loss = loss_maxcut_weighted_multi(temp, C, dct, torch.ones(len(C) + len(outer_constraint)).to(TORCH_DEVICE), params['hyper'],
+                                              TORCH_DEVICE, outer_constraint, temp_reduce, start=start, node_mapper=node_mapper, cur_nodes=cur_nodes)
         elif params['mode'] == 'maxind':
             loss = loss_maxind_weighted2(temp, C, dct, [1 for i in range(len(C))])
         et = time.time()
@@ -549,8 +572,18 @@ def GD_train(params, f, C, n, info, file_name):
                 break
         prev_loss=loss
 
-    best_out = best_out.detach().numpy()
-    best_out = {i+1: best_out[i][0] for i in range(len(best_out))}
+  
+    if params["load best out"]:
+        with open("best_out.txt", "r") as f:
+            best_out = eval(f.read())
+    else:
+        best_out = best_out.detach().numpy()
+        best_out = {i + 1: best_out[i][0] for i in range(len(best_out))}
+        # best_out = {i + 1: best_out[graph_dict[i+1][0]-1][graph_dict[i+1][1]] for i in range(n_org)}
+
+    # best_out = best_out.detach().numpy()
+    # best_out = {i+1: best_out[i][0] for i in range(len(best_out))}
+
     train_time = timeit.default_timer()-temp_time
     temp_time2=timeit.default_timer()
     all_weights = [1.0 for c in (C)]
