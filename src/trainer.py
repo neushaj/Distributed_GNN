@@ -4,7 +4,7 @@ import timeit
 from itertools import chain
 import torch
 from src.timer import Timer
-from src.loss import loss_cal_and_update, maxcut_loss_func_helper, loss_maxcut_weighted, loss_sat_weighted, loss_maxind_weighted, loss_maxind_QUBO, loss_maxind_weighted2, loss_task_weighted, loss_maxcut_weighted_anealed, loss_task_weighted_vec, loss_mincut_weighted, loss_partitioning_weighted, loss_partitioning_nonbinary, loss_maxcut_weighted_coarse, loss_maxind_QUBO_coarse, loss_maxcut_weighted_multi
+from src.loss import loss_cal_and_update, maxcut_loss_func_helper, loss_maxcut_weighted, loss_sat_weighted,loss_maxind_weighted, loss_maxind_QUBO, loss_maxind_weighted2, loss_task_weighted, loss_maxcut_weighted_anealed, loss_task_weighted_vec, loss_mincut_weighted, loss_partitioning_weighted, loss_partitioning_nonbinary, loss_maxcut_weighted_coarse, loss_maxind_QUBO_coarse, loss_maxcut_weighted_multi, loss_maxcut_numpy, loss_maxcut_weighted2
 from src.utils import mapping_algo, mapping_distribution, gen_q_mis,gen_q_maxcut, mapping_distribution_QUBO, get_normalized_G_from_con, mapping_distribution_vec_task, mapping_distribution_vec, all_to_weights, all_to_weights_task
 import numpy as np
 import multiprocessing as mp
@@ -408,13 +408,23 @@ def centralized_train_for(X, params, f, total_C, n, info_input_total, weights, f
                 # torch.distributed.all_gather(temp_reduce, temp)
                 # temp_reduce = torch.cat(temp_reduce, dim=0)
                 # temp_reduce = temp_reduce.squeeze(1) 
-                padded_temp = torch.zeros((max(partition_sizes),1), dtype=torch.float32).to(f'cuda:{device}')
-                padded_temp[:temp.size(0)] = temp
-                padded_temp_reduce = [torch.zeros((max(partition_sizes),1), dtype=torch.float32).to(f'cuda:{device}') for _ in range(params["num_gpus"])]
-                torch.distributed.all_gather(padded_temp_reduce, padded_temp)
-                temp_reduce = [t[:s] for t, s in zip(padded_temp_reduce, partition_sizes)]
-                temp_reduce = torch.cat(temp_reduce, dim=0)
-                temp_reduce = temp_reduce.squeeze(1) 
+
+                # padded_temp = torch.zeros((max(partition_sizes),1), dtype=torch.float32).to(f'cuda:{device}')
+                # padded_temp[:temp.size(0)] = temp
+                # padded_temp_reduce = [torch.zeros((max(partition_sizes),1), dtype=torch.float32).to(f'cuda:{device}') for _ in range(params["num_gpus"])]
+                # torch.distributed.all_gather(padded_temp_reduce, padded_temp)
+                # temp_reduce = [t[:s] for t, s in zip(padded_temp_reduce, partition_sizes)]
+                # temp_reduce = torch.cat(temp_reduce, dim=0)
+                # temp_reduce = temp_reduce.squeeze(1) 
+
+                padded_temp = torch.zeros((sum(partition_sizes),1), dtype=torch.float32).to(f'cuda:{device}')
+                for i in range(n):
+                    padded_temp[cur_nodes[i]-1] = temp[i] 
+
+                padded_temp = padded_temp.detach()
+                torch.distributed.all_reduce(padded_temp, op=torch.distributed.ReduceOp.SUM)
+                
+                temp_reduce = padded_temp.squeeze(1) 
 
             loss = loss_maxcut_weighted_multi(temp, C, dct, torch.ones(len(C) + len(outer_constraint)).to(TORCH_DEVICE), params['hyper'],
                                               TORCH_DEVICE, outer_constraint, temp_reduce, start=start, node_mapper=node_mapper, cur_nodes=cur_nodes)
@@ -437,10 +447,10 @@ def centralized_train_for(X, params, f, total_C, n, info_input_total, weights, f
             loss_sum = loss.clone()
             torch.distributed.reduce(loss_sum, dst=0, op=torch.distributed.ReduceOp.SUM)
             if torch.distributed.get_rank() == 0:
-                average_loss = loss_sum / torch.distributed.get_world_size()
-                if average_loss < best_loss:
-                    print("average_loss", average_loss, "best_loss", best_loss)
-                    best_loss = average_loss
+                #average_loss = loss_sum / torch.distributed.get_world_size()
+                if loss_sum < best_loss:
+                    print("loss_sum", loss_sum, "best_loss", best_loss)
+                    best_loss = loss_sum
                     best_out = temp_reduce.cpu()
                     # print("best_out", best_out)
                     if i == int(params['epoch']) - 1:
@@ -479,6 +489,7 @@ def centralized_train_for(X, params, f, total_C, n, info_input_total, weights, f
             temp_time2 = timeit.default_timer()
             all_weights = [1.0 for c in (total_C)]
             print("info_input_total", len(info_input_total), "weights", len(weights), "total_C", len(total_C))
+            print("Result before mapping distribution:   ", loss_maxcut_weighted2(temp_reduce, total_C,[1 for i in range(len(total_C))], 0, 0, params['hyper']))
             res = mapping_distribution(best_out, params, len(weights), info_input_total, weights, total_C, all_weights,
                                        1, params['penalty'], params['hyper'])
             print("res", res)

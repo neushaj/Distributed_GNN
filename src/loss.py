@@ -36,6 +36,39 @@ def loss_maxcut_weighted(probs, C, weights, penalty_inc, penalty_c,  hyper):
         loss += penalty_c * penalty
     return loss
 
+def loss_maxcut_weighted2(probs, C, weights, penalty_inc, penalty_c,  hyper):
+    #print(weights)
+    x = probs.squeeze()
+    loss = 0
+    penalty=0
+    #print('-----------------')
+    # loss=sum([torch.prod(x[indicest[i]]) + torch.prod(1 - x[indicest[i]]) for i in range(len(C))])
+    for c, w in zip(C, weights):
+        temp_1s = 1
+        temp_0s = 1
+        if hyper:
+            # indices = [i - 1 for i in c]
+            # temp=torch.prod(x[indices])+torch.prod(1-x[indices])
+            for index in c:
+                temp_1s *= (1 - x[index-1])
+                temp_0s *= (x[index-1])
+        else:
+            for index in c[0:2]:
+                temp_1s *= (1 - x[index-1])
+                temp_0s *= (x[index-1])
+        temp = (temp_1s + temp_0s - 1)
+
+        #print(temp_1s, temp_0s, w)
+        #temp = (temp_1s + temp_0s - 1)
+
+        #print(c, temp)
+        loss += (temp * w)
+        #print(loss)
+    if penalty_inc:
+        penalty = torch.sum(torch.min((1 - x), x))
+        loss += penalty_c * penalty
+    return loss
+
 
 def loss_maxcut_weighted_coarse(probs, C, dct, weights, hyper=False):
     x = probs.squeeze()

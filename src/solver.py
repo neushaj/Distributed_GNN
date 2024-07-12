@@ -334,7 +334,7 @@ def centralized_solver_for(
 
     #f = int(np.sqrt(n))
     # f=n // 2
-    f = 21
+    f = 21 ###
     
     info = {x + 1: [] for x in range(header['num_nodes'])}
     inner_info = None
