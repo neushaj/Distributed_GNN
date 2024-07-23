@@ -1,1 +1,1 @@
-INFO:main:G22.txt:, running time: 129.79086357099004, res: [-13096], res_th: [-1256], training_time: [1.0651806659880094], mapping_time: [127.47791735397186]
+INFO:main:G22.txt:, running time: 56.59502694802359, res: [-13021], res_th: [-12055], training_time: [0.7032219381071627], mapping_time: [55.08016471401788]
