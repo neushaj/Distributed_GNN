@@ -13,7 +13,7 @@ if __name__ == '__main__':
 
    if test_mode == "dist":
       if dataset == "stanford":
-         with open('./dist_configs/maxcut_R_for.json') as f:
+         with open('./dist_configs/maxcut_R_for_seq.json') as f:
             params = json.load(f)
       elif dataset == "arxiv":
          with open('./configs/maxcut_arxiv_for.json') as f:
@@ -29,7 +29,7 @@ if __name__ == '__main__':
 
    if test_mode == "infer":
       if dataset == "stanford":
-         with open('./infer_configs/maxcut_R_for.json') as f:
+         with open('./infer_configs/maxcut_R_for_seq.json') as f:
             params = json.load(f)
       elif dataset == "arxiv":
          with open('./infer_configs/maxcut_arxiv_for.json') as f:

@@ -1,2 +1,2 @@
-INFO:main:G4.txt:, running time: 504.16857739401166, res: [[-9526]], res_th: [[-1221]], res2: [], training_time: 396.5577749600052, mapping_time: 107.13242876401637
-INFO:main:G16.txt:, running time: 281.1794259730086, res: [[-2187]], res_th: [[-376]], res2: [], training_time: 171.10199136202573, mapping_time: 109.97537269099848
+INFO:main:G4.txt:, running time: 37.409958706004545, res: [[-9640]], res_th: [[-8321]], res2: [], training_time: 34.17907836288214, mapping_time: 2.97683920385316
+INFO:main:G22.txt:, running time: 43.999975855927914, res: [[-10231]], res_th: [[-10223]], res2: [], training_time: 33.303900476079434, mapping_time: 10.225287362001836

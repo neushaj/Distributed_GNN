@@ -355,7 +355,7 @@ def centralized_train_for(X, params, f, total_C, n, info_input_total, weights, f
         info = info_input
         con_list_range_keys = list(info.keys())
         con_list_range = [i for i in con_list_range_keys if len(info[i]) > 0]
-        print("con_list_range", con_list_range)
+        #print("con_list_range", con_list_range)
     else:
         con_list_length = n
         info = info_input

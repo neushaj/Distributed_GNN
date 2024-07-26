@@ -385,7 +385,7 @@ def centralized_solver_for(
                 res_th = {x: 0 if prob[x] < 0.5 else 1 for x in prob.keys()}
                 if params['mode'] == 'sat':
                     score, new_w = loss_sat_numpy_boost(res, constraints, [1 for i in range(len(constraints))],
-                                                        inc=params['boosting_mapping'])
+                                                            inc=params['boosting_mapping'])
                     scores.append(score)
                 elif params['mode'] == 'maxcut':
                     score, new_w = loss_maxcut_numpy_boost(res, constraints, [1 for i in range(len(constraints))],

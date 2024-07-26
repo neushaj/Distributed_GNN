@@ -1,0 +1,7 @@
+INFO:main:G4.txt:, running time: 611.8155381779652, res: [[-9630]], res_th: [[-10107]], res2: [], training_time: 608.4704545829445, mapping_time: 2.9804508448578417
+INFO:main:G16.txt:, running time: 192.518596165115, res: [[-2393]], res_th: [[-2524]], res2: [], training_time: 190.65249031898566, mapping_time: 1.7903199738357216
+INFO:main:G2.txt:, running time: 606.0694540720433, res: [[-9646]], res_th: [[-10021]], res2: [], training_time: 602.8456006019842, mapping_time: 2.9803357729688287
+INFO:main:G25.txt:, running time: 690.8208236678038, res: [[-9944]], res_th: [[-10472]], res2: [], training_time: 680.2998840250075, mapping_time: 10.114177832147107
+INFO:main:G15.txt:, running time: 250.24849599599838, res: [[-2488]], res_th: [[-2660]], res2: [], training_time: 248.37326127686538, mapping_time: 1.7947778180241585
+INFO:main:G5.txt:, running time: 610.0569126529153, res: [[-9726]], res_th: [[-10460]], res2: [], training_time: 606.7177964281291, mapping_time: 2.965133858146146
+INFO:main:G24.txt:, running time: 692.9879517159425, res: [[-10016]], res_th: [[-10700]], res2: [], training_time: 682.4829386330675, mapping_time: 10.106459947070107

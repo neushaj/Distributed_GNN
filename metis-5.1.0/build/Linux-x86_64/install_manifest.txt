@@ -1,0 +1,8 @@
+/home/neusha/GNN/HypOp/metis/include/metis.h
+/home/neusha/GNN/HypOp/metis/lib/libmetis.so
+/home/neusha/GNN/HypOp/metis/bin/gpmetis
+/home/neusha/GNN/HypOp/metis/bin/ndmetis
+/home/neusha/GNN/HypOp/metis/bin/mpmetis
+/home/neusha/GNN/HypOp/metis/bin/m2gmetis
+/home/neusha/GNN/HypOp/metis/bin/graphchk
+/home/neusha/GNN/HypOp/metis/bin/cmpfillin

@@ -1,6 +1,8 @@
 import numpy
 from src.data_reading import read_uf, read_stanford, read_hypergraph, read_hypergraph_task, read_NDC, read_arxiv
 from src.solver import  centralized_solver, centralized_solver_for
+import networkx as nx
+import metis
 import logging
 import os
 import h5py
@@ -187,6 +189,14 @@ def exp_centralized_for_multi(proc_id, devices, params):
                     partition_sizes = [len(partitioning_data[str(j)]) for j in range(params['num_gpus'])]
                     cur_nodes = partitioning_data[str(proc_id)]
                     cur_nodes = [c + 1 for c in cur_nodes]
+            elif params["partitioning_alg"] == "metis":
+                G = nx.Graph()
+                G.add_edges_from(constraints)
+                metis_graph = metis.networkx_to_metis(G)
+                (edgecuts, parts) = metis.part_graph(metis_graph, nparts=params["n_partitions"])
+                cur_nodes = [node+1 for node, part in enumerate(parts) if part == proc_id]
+                partition_sizes = [parts.count(i) for i in range(params['num_gpus'])]
+                
             inner_constraint = []
             outer_constraint = []
             for c in constraints:
