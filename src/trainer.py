@@ -490,6 +490,7 @@ def centralized_train_for(X, params, f, total_C, n, info_input_total, weights, f
             all_weights = [1.0 for c in (total_C)]
             print("info_input_total", len(info_input_total), "weights", len(weights), "total_C", len(total_C))
             print("Result before mapping distribution:   ", loss_maxcut_weighted2(temp_reduce, total_C,[1 for i in range(len(total_C))], 0, 0, params['hyper']))
+            weights = all_to_weights(all_weights, len(best_out), total_C) #neusha
             res = mapping_distribution(best_out, params, len(weights), info_input_total, weights, total_C, all_weights,
                                        1, params['penalty'], params['hyper'])
             print("res", res)

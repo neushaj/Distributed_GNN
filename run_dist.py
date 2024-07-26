@@ -8,32 +8,23 @@ import torch.multiprocessing as mp
 
 
 if __name__ == '__main__':  
-   test_mode = "dist"
-   dataset = "stanford"
 
-   if test_mode == "dist":
-      if dataset == "stanford":
-         with open('./dist_configs/maxcut_R_for_seq.json') as f:
-            params = json.load(f)
-      elif dataset == "arxiv":
-         with open('./configs/maxcut_arxiv_for.json') as f:
-            params = json.load(f)
-      
+   with open('./configs/maxcut_R_for_seq.json') as f:
+      params = json.load(f)
+   
+   if params["multi_gpu"]:
       params["logging_path"] = params["logging_path"].split(".log")[0] +str(params["multi_gpu"]) + "_" + params["data"] + "_test.log"
-      if params["multi_gpu"]:
-         mp.spawn(exp_centralized_for_multi, args=(list(range(params["num_gpus"])), params), nprocs=params["num_gpus"])
-      else:
-         exp_centralized_for(params)
+      mp.spawn(exp_centralized_for_multi, args=(list(range(params["num_gpus"])), params), nprocs=params["num_gpus"])
+   else:
+      exp_centralized_for(params)
 
-      test_mode = "infer"
-
-   if test_mode == "infer":
-      if dataset == "stanford":
-         with open('./infer_configs/maxcut_R_for_seq.json') as f:
-            params = json.load(f)
-      elif dataset == "arxiv":
-         with open('./infer_configs/maxcut_arxiv_for.json') as f:
-            params = json.load(f)
-      exp_centralized(params)
+   # if test_mode == "infer":
+   #    if dataset == "stanford":
+   #       with open('./infer_configs/maxcut_R_for_seq.json') as f:
+   #          params = json.load(f)
+   #    elif dataset == "arxiv":
+   #       with open('./infer_configs/maxcut_arxiv_for.json') as f:
+   #          params = json.load(f)
+   #    exp_centralized(params)
 
    

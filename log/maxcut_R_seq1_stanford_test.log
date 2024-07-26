@@ -1,2 +1,0 @@
-INFO:main:G4.txt:, running time: 37.409958706004545, res: [[-9640]], res_th: [[-8321]], res2: [], training_time: 34.17907836288214, mapping_time: 2.97683920385316
-INFO:main:G22.txt:, running time: 43.999975855927914, res: [[-10231]], res_th: [[-10223]], res2: [], training_time: 33.303900476079434, mapping_time: 10.225287362001836
