@@ -332,9 +332,11 @@ def centralized_solver_for(
     else:
         n = len(cur_nodes)
 
-    #f = int(np.sqrt(n))
+
+    # f = int(np.sqrt(n))
     # f=n // 2
-    f = 21 ###
+    f = int(np.sqrt(header["num_nodes"]//params["num_gpus"])) ##neusha
+ 
     
     info = {x + 1: [] for x in range(header['num_nodes'])}
     inner_info = None

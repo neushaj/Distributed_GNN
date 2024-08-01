@@ -1,0 +1,15 @@
+INFO:main:G4.txt:, running time: 309.6483051199466, res: [[-11424]], res_th: [[-9749]], res2: [], training_time: 299.28048985102214, mapping_time: 10.097672516014427
+INFO:main:G16.txt:, running time: 179.1180327751208, res: [[-2971]], res_th: [[-2463]], res2: [], training_time: 170.6035825398285, mapping_time: 8.454089971026406
+INFO:main:G2.txt:, running time: 304.9222054129932, res: [[-11388]], res_th: [[-9747]], res2: [], training_time: 294.4263745408971, mapping_time: 10.194348140852526
+INFO:main:G25.txt:, running time: 389.75767493690364, res: [[-13026]], res_th: [[-11214]], res2: [], training_time: 337.47751727397554, mapping_time: 51.9262413859833
+INFO:main:G15.txt:, running time: 177.35717807803303, res: [[-2975]], res_th: [[-2456]], res2: [], training_time: 168.63255774904974, mapping_time: 8.528240445069969
+INFO:main:G5.txt:, running time: 304.3490249081515, res: [[-11346]], res_th: [[-9818]], res2: [], training_time: 294.23158196918666, mapping_time: 9.942183944163844
+INFO:main:G24.txt:, running time: 386.09203281695955, res: [[-12999]], res_th: [[-11171]], res2: [], training_time: 333.9854884361848, mapping_time: 51.750790182035416
+INFO:main:G55.txt:, running time: 572.5793572959956, res: [[-9852]], res_th: [[-6593]], res2: [], training_time: 262.9924076120369, mapping_time: 308.96348963701166
+INFO:main:G23.txt:, running time: 389.79166682297364, res: [[-12994]], res_th: [[-11220]], res2: [], training_time: 337.0690398949664, mapping_time: 52.36251994688064
+INFO:main:G17.txt:, running time: 178.15964733297005, res: [[-2991]], res_th: [[-2454]], res2: [], training_time: 169.3873844339978, mapping_time: 8.57444730703719
+INFO:main:G1.txt:, running time: 305.85094626201317, res: [[-11419]], res_th: [[-9786]], res2: [], training_time: 295.7237286590971, mapping_time: 9.824649546993896
+INFO:main:G26.txt:, running time: 388.4101818508934, res: [[-13002]], res_th: [[-11089]], res2: [], training_time: 336.53721715090796, mapping_time: 51.39365680213086
+INFO:main:G14.txt:, running time: 176.45526825403795, res: [[-2992]], res_th: [[-2527]], res2: [], training_time: 167.8125426871702, mapping_time: 8.57948107784614
+INFO:main:G70.txt:, running time: 1541.3054363070987, res: [[-9085]], res_th: [[-4683]], res2: [], training_time: 255.4388387450017, mapping_time: 1284.4045540890656
+INFO:main:G3.txt:, running time: 304.131703077117, res: [[-11415]], res_th: [[-9743]], res2: [], training_time: 293.9771959949285, mapping_time: 9.88665428897366

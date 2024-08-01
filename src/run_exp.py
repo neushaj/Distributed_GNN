@@ -191,6 +191,7 @@ def exp_centralized_for_multi(proc_id, devices, params):
                     cur_nodes = [c + 1 for c in cur_nodes]
             elif params["partitioning_alg"] == "metis":
                 G = nx.Graph()
+                G.add_nodes_from(range(1, header["num_nodes"]+1))
                 G.add_edges_from(constraints)
                 metis_graph = metis.networkx_to_metis(G)
                 (edgecuts, parts) = metis.part_graph(metis_graph, nparts=params["n_partitions"])

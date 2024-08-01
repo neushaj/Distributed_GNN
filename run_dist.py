@@ -5,11 +5,12 @@ import json
 import torch
 import torch.distributed as dist
 import torch.multiprocessing as mp
+import os
 
 
 if __name__ == '__main__':  
-
-   with open('./configs/maxcut_R_for_seq.json') as f:
+   
+   with open('./configs/maxcut_R_for_metis.json') as f:
       params = json.load(f)
    
    if params["multi_gpu"]:
