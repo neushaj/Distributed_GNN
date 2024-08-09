@@ -404,19 +404,6 @@ def centralized_train_for(X, params, f, total_C, n, info_input_total, weights, f
             loss = loss_sat_weighted(temp, C, dct, [1 for i in range(len(C))])
         elif params['mode'] == 'maxcut':
             if params["multi_gpu"]:
-                # temp_reduce = [torch.zeros_like(temp).to(f'cuda:{device}') for _ in range(4)]
-                # torch.distributed.all_gather(temp_reduce, temp)
-                # temp_reduce = torch.cat(temp_reduce, dim=0)
-                # temp_reduce = temp_reduce.squeeze(1) 
-
-                # padded_temp = torch.zeros((max(partition_sizes),1), dtype=torch.float32).to(f'cuda:{device}')
-                # padded_temp[:temp.size(0)] = temp
-                # padded_temp_reduce = [torch.zeros((max(partition_sizes),1), dtype=torch.float32).to(f'cuda:{device}') for _ in range(params["num_gpus"])]
-                # torch.distributed.all_gather(padded_temp_reduce, padded_temp)
-                # temp_reduce = [t[:s] for t, s in zip(padded_temp_reduce, partition_sizes)]
-                # temp_reduce = torch.cat(temp_reduce, dim=0)
-                # temp_reduce = temp_reduce.squeeze(1) 
-
                 padded_temp = torch.zeros((sum(partition_sizes),1), dtype=torch.float32).to(f'cuda:{device}')
                 for i in range(n):
                     padded_temp[cur_nodes[i]-1] = temp[i] 
@@ -500,6 +487,12 @@ def centralized_train_for(X, params, f, total_C, n, info_input_total, weights, f
             train_time = None
             map_time = None
             best_out = None
+            
+        # torch.cuda.synchronize(torch.distributed.get_rank())
+        print(f"Rank {torch.distributed.get_rank()} waiting at first barrier")        
+        torch.distributed.barrier()
+        print(f"Rank {torch.distributed.get_rank()} passed first barrier")
+    
     else:
         best_out = best_out.detach().numpy()
         best_out = {i + 1: best_out[i][0] for i in range(len(best_out))}

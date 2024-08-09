@@ -10,7 +10,7 @@ import numpy as np
 import json
 import timeit
 import torch
-
+from datetime import datetime, timedelta ##
 
 def exp_centralized(params):
     logging.basicConfig(filename=params['logging_path'], filemode='w', level=logging.INFO)
@@ -149,10 +149,19 @@ def exp_centralized_for_multi(proc_id, devices, params):
     print("start to prepare for device")
     dev_id = devices[proc_id]
     dist_init_method = "tcp://{master_ip}:{master_port}".format(master_ip="127.0.0.1", master_port="12345")
+    
+    os.environ['TORCH_NCCL_BLOCKING_WAIT'] = '0'
+    # os.environ['MASTER_ADDR'] = 'localhost'
+    # os.environ['MASTER_PORT'] = '12355'
+
     torch.cuda.set_device(dev_id)
     TORCH_DEVICE = torch.device("cuda:" + str(dev_id))
     print("start to initialize process")
-    torch.distributed.init_process_group(backend="nccl", init_method='env://', world_size=len(devices), rank=proc_id)
+    #torch.distributed.init_process_group(backend="nccl", init_method='env://', world_size=len(devices), rank=proc_id)
+    torch.distributed.init_process_group('nccl' if torch.distributed.is_nccl_available() else 'gloo',
+                                        timeout=timedelta(seconds=7200000),
+                                        rank=proc_id,
+                                        world_size=len(devices))
     print("start to train")
 
     logging.basicConfig(filename=params['logging_path'], filemode='w', level=logging.INFO)

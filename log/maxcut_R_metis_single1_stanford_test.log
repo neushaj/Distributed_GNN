@@ -1,0 +1,2 @@
+INFO:main:G70.txt:, running time: 729.7538480851799, res: [[-8952]], res_th: [[-4786]], res2: [], training_time: 37.939874269999564, mapping_time: 690.569726837799
+INFO:main:G3.txt:, running time: 39.264679045882076, res: [[-11331]], res_th: [[0]], res2: [], training_time: 32.61954983975738, mapping_time: 6.224928770214319
